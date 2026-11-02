@@ -1,0 +1,15 @@
+# Install a matched torch + torchvision build first; see README.md.
+# Dependency specification, NOT the authors' original locked environment.
+numpy
+pandas<3
+scipy
+matplotlib
+seaborn
+scikit-learn
+opencv-python
+pyarrow
+polars
+tqdm
+timm
+optuna
+openpyxl

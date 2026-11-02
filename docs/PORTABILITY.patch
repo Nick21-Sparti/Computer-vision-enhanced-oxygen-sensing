@@ -1,0 +1,1022 @@
+--- uploaded/response_paper_1_3(1).py
++++ scripts/aqueous_tvit.py
+@@ -1,16 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 10.9.0 - Physically Informed Classical Baseline (Stern-Volmer)
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ The fundamental challenge is the "Response Time Problem" in chemical sensing.
+@@ -52,6 +45,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -103,7 +99,7 @@
+ # ==============================================================================
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # Calibration steps usually happen in these windows. Used for Static Baseline fitting.
+@@ -111,10 +107,10 @@
+ UNSTRUCTURED_CUTOFF_S = 1000
+ N_EXPERIMENTS_CAP = None
+ 
+-OUTPUT_DIR = os.path.join(BASE_PROJECT_DIR, "Dynamic_IDC_Analysis_V10")
++OUTPUT_DIR = output_path('aqueous_tvit')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
+-CV_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "cv_fold_cache")
++FEATURE_CACHE_DIR = cache_path('aqueous_tvit', "features")
++CV_CACHE_DIR = cache_path('aqueous_tvit', "folds")
+ 
+ N_STACKED_FRAMES = 3
+ FRAME_STACK_STEP = 10
+@@ -245,7 +241,7 @@
+             self.vit.patch_embed.proj.weight = nn.Parameter(orig_proj.weight.repeat(1, stack_size, 1, 1) / stack_size)
+             self.vit.patch_embed.proj.bias = orig_proj.bias
+         self.head = nn.Sequential(nn.Linear(self.vit.embed_dim, 128), nn.GELU(), nn.Linear(128, 1))
+-    def forward(self, x): return self.head(self.vit.forward_features(x)[:, 0]).squeeze()
++    def forward(self, x): return self.head(self.vit.forward_features(x)[:, 0]).squeeze(-1)
+ 
+ # ==============================================================================
+ # 7. ANALYTICS: CHEMOMETRICS & STERN-VOLMER FITTING (UPDATED)
+@@ -440,4 +436,4 @@
+     pd.DataFrame(global_metrics).to_csv(os.path.join(OUTPUT_DIR, "Global_Performance_Summary.csv"))
+     print("Execution Finished. See OUTPUT_DIR for high-impact results.")
+ 
+-if __name__ == "__main__": main()+if __name__ == "__main__": main()
+--- uploaded/response_paper_2_PINN_diff_eq(1).py
++++ scripts/aqueous_tvit_mass_transfer.py
+@@ -1,16 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 11.0 - High-Impact Journal Edition (Validation & XAI)
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ The fundamental challenge is the "Response Time Problem" in chemical sensing.
+@@ -52,6 +45,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -103,7 +99,7 @@
+ # ==============================================================================
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # --- MANUAL INTERVAL CONFIGURATION ---
+@@ -125,10 +121,10 @@
+ PINN_PHYSICS_WEIGHT = 0.5  # Weight (Lambda) for the Physics Residual Term
+ 
+ # Output Directory Hierarchy
+-OUTPUT_DIR = os.path.join(BASE_PROJECT_DIR, "Dynamic_IDC_Analysis_V11")
++OUTPUT_DIR = output_path('aqueous_tvit_mass_transfer')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
+-CV_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "cv_fold_cache")
++FEATURE_CACHE_DIR = cache_path('aqueous_tvit_mass_transfer', "features")
++CV_CACHE_DIR = cache_path('aqueous_tvit_mass_transfer', "folds")
+ 
+ # Hyperparameters
+ N_STACKED_FRAMES = 3
+@@ -334,7 +330,7 @@
+         )
+ 
+     def forward(self, x):
+-        return self.head(self.vit.forward_features(x)[:, 0]).squeeze()
++        return self.head(self.vit.forward_features(x)[:, 0]).squeeze(-1)
+ 
+ 
+ # ==============================================================================
+@@ -645,7 +641,7 @@
+ 
+         # G. Metrics
+         unstruct_mask = test_df['elapsed'] < UNSTRUCTURED_CUTOFF_S
+-        def calc_mae(mask, col): return mean_absolute_error(test_df[mask]['oxygen'], test_df[mask][col]) if mask.any() else np.nan
++        def calc_mae(mask, col): return mean_absolute_error(test_df[mask]['oxygen'], test_df[mask][col]) if isinstance(mask, slice) or mask.any() else np.nan
+ 
+         metrics = {
+             'experiment_id': test_day,
+@@ -668,4 +664,5 @@
+     try:
+         main()
+     except Exception:
+-        traceback.print_exc()+        traceback.print_exc()
++        raise
+--- uploaded/response_paper_3_aitools_1(1).py
++++ scripts/aqueous_tvit_multitask.py
+@@ -1,17 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 10.9.2 - Crash-Proof Resumable Workflow
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+-6. Use Polars (pl) where data manipulation speed is critical.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ The fundamental challenge is the "Response Time Problem" in chemical sensing.
+@@ -49,6 +41,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -108,7 +103,7 @@
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+ # Update this path to your specific dataset location
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # Manual Definition of Equilibrium States (Ground Truth for Phase Classifier)
+@@ -117,10 +112,10 @@
+ N_EXPERIMENTS_CAP = None
+ 
+ # Output Directories
+-OUTPUT_DIR = os.path.join(BASE_PROJECT_DIR, "Dynamic_IDC_Analysis_V10")
++OUTPUT_DIR = output_path('aqueous_tvit_multitask')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
+-CV_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "cv_fold_cache")
++FEATURE_CACHE_DIR = cache_path('aqueous_tvit_multitask', "features")
++CV_CACHE_DIR = cache_path('aqueous_tvit_multitask', "folds")
+ MODEL_CHECKPOINT_DIR = os.path.join(OUTPUT_DIR, "7_Model_Checkpoints")  # NEW
+ 
+ # Hyperparameters
+@@ -650,4 +645,5 @@
+         main()
+     except Exception as e:
+         print("CRITICAL FAILURE:")
+-        traceback.print_exc()+        traceback.print_exc()
++        raise
+--- uploaded/response_paper_4_bayesian(1).py
++++ scripts/aqueous_tvit_bayesian.py
+@@ -1,18 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 10.9.3 - Bayesian Logic & Optuna HPO
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+-6. Use Polars (pl) where data manipulation speed is critical.
+-7. RESPECT THE OPTUNA & BAYESIAN ARCHITECTURE.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ The fundamental challenge is the "Response Time Problem" in chemical sensing.
+@@ -58,6 +49,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -122,7 +116,7 @@
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+ # Update this path to your specific dataset location
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # Manual Definition of Equilibrium States (Ground Truth for Phase Classifier)
+@@ -131,10 +125,10 @@
+ N_EXPERIMENTS_CAP = None
+ 
+ # Output Directories
+-OUTPUT_DIR = os.path.join(BASE_PROJECT_DIR, "Dynamic_IDC_Analysis_V10")
++OUTPUT_DIR = output_path('aqueous_tvit_bayesian')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
+-CV_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "cv_fold_cache")
++FEATURE_CACHE_DIR = cache_path('aqueous_tvit_bayesian', "features")
++CV_CACHE_DIR = cache_path('aqueous_tvit_bayesian', "folds")
+ MODEL_CHECKPOINT_DIR = os.path.join(OUTPUT_DIR, "7_Model_Checkpoints")
+ OPTUNA_DIR = os.path.join(OUTPUT_DIR, "8_Optuna_Optimization")
+ 
+@@ -887,4 +881,5 @@
+         main()
+     except Exception as e:
+         print("CRITICAL FAILURE:")
+-        traceback.print_exc()+        traceback.print_exc()
++        raise
+--- uploaded/response_paper_5_future_t(1).py
++++ scripts/aqueous_tvit_kinetic.py
+@@ -1,17 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 10.9.4 - Physics-Informed Kinetic MTL (Gradient & Future)
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+-6. Use Polars (pl) where data manipulation speed is critical.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ The fundamental challenge is the "Response Time Problem" in chemical sensing.
+@@ -56,6 +48,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -119,7 +114,7 @@
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+ # Update this path to your specific dataset location
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # Manual Definition of Equilibrium States (Ground Truth for Phase Classifier)
+@@ -128,10 +123,10 @@
+ N_EXPERIMENTS_CAP = None
+ 
+ # Output Directories
+-OUTPUT_DIR = os.path.join(BASE_PROJECT_DIR, "Dynamic_IDC_Analysis_V10")
++OUTPUT_DIR = output_path('aqueous_tvit_kinetic')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
+-CV_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "cv_fold_cache")
++FEATURE_CACHE_DIR = cache_path('aqueous_tvit_kinetic', "features")
++CV_CACHE_DIR = cache_path('aqueous_tvit_kinetic', "folds")
+ MODEL_CHECKPOINT_DIR = os.path.join(OUTPUT_DIR, "7_Model_Checkpoints")
+ OPTUNA_DIR = os.path.join(OUTPUT_DIR, "8_Optuna_Optimization")
+ 
+@@ -381,7 +376,7 @@
+             # Prevent crossing experiment boundaries
+             if self.df.iloc[lookback]['experiment_id'] != exp_id:
+                 lookback = idx
+-            pix = self.df.iloc[lookback]['pixels'].reshape(STORAGE_DIM[0], STORAGE_DIM[1], 3)
++            pix = np.asarray(self.df.iloc[lookback]['pixels'], dtype=np.uint8).reshape(STORAGE_DIM[0], STORAGE_DIM[1], 3)
+             img_t = torch.from_numpy(pix).permute(2, 0, 1).float() / 255.0
+             frames.append(self.resize(img_t))
+ 
+@@ -442,9 +437,9 @@
+     def forward(self, x):
+         features = self.vit.forward_features(x)[:, 0]  # CLS token
+ 
+-        curr_pred = self.head_curr(features).squeeze()
+-        grad_pred = self.head_grad(features).squeeze()
+-        fut_pred = self.head_fut(features).squeeze()
++        curr_pred = self.head_curr(features).squeeze(-1)
++        grad_pred = self.head_grad(features).squeeze(-1)
++        fut_pred = self.head_fut(features).squeeze(-1)
+ 
+         return curr_pred, grad_pred, fut_pred
+ 
+@@ -760,4 +755,5 @@
+         main()
+     except Exception as e:
+         print("CRITICAL FAILURE:")
+-        traceback.print_exc()+        traceback.print_exc()
++        raise
+--- uploaded/response_paper_6_curriculum_learning(1).py
++++ scripts/aqueous_tvit_curriculum.py
+@@ -1,17 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 10.9.5 - Kinetic Curriculum Learning
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+-6. Use Polars (pl) where data manipulation speed is critical.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ The fundamental challenge is the "Response Time Problem" in chemical sensing.
+@@ -57,6 +49,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -120,7 +115,7 @@
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+ # Update this path to your specific dataset location
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # Manual Definition of Equilibrium States (Ground Truth for Phase Classifier)
+@@ -129,10 +124,10 @@
+ N_EXPERIMENTS_CAP = None
+ 
+ # Output Directories
+-OUTPUT_DIR = os.path.join(BASE_PROJECT_DIR, "Dynamic_IDC_Analysis_V10")
++OUTPUT_DIR = output_path('aqueous_tvit_curriculum')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
+-CV_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "cv_fold_cache")
++FEATURE_CACHE_DIR = cache_path('aqueous_tvit_curriculum', "features")
++CV_CACHE_DIR = cache_path('aqueous_tvit_curriculum', "folds")
+ MODEL_CHECKPOINT_DIR = os.path.join(OUTPUT_DIR, "7_Model_Checkpoints")
+ OPTUNA_DIR = os.path.join(OUTPUT_DIR, "8_Optuna_Optimization")
+ 
+@@ -336,7 +331,7 @@
+         for i in range(self.stack_size):
+             lookback = max(0, idx - (i * self.step))
+             if self.df.iloc[lookback]['experiment_id'] != exp_id: lookback = idx
+-            pix = self.df.iloc[lookback]['pixels'].reshape(STORAGE_DIM[0], STORAGE_DIM[1], 3)
++            pix = np.asarray(self.df.iloc[lookback]['pixels'], dtype=np.uint8).reshape(STORAGE_DIM[0], STORAGE_DIM[1], 3)
+             img_t = torch.from_numpy(pix).permute(2, 0, 1).float() / 255.0
+             frames.append(self.resize(img_t))
+ 
+@@ -367,7 +362,7 @@
+ 
+     def forward(self, x):
+         features = self.vit.forward_features(x)[:, 0]
+-        return self.head_curr(features).squeeze(), self.head_grad(features).squeeze(), self.head_fut(features).squeeze()
++        return self.head_curr(features).squeeze(-1), self.head_grad(features).squeeze(-1), self.head_fut(features).squeeze(-1)
+ 
+ 
+ # ==============================================================================
+@@ -657,4 +652,5 @@
+     try:
+         main()
+     except Exception:
+-        traceback.print_exc()+        traceback.print_exc()
++        raise
+--- uploaded/response_paper_alternatives_linear_methods_local(1).py
++++ scripts/aqueous_dynamic_benchmarks.py
+@@ -1,20 +1,10 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ # -*- coding: utf-8 -*-
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 11.1.0-Local-Classical - Fixed-Epoch Benchmark Suite, V14 T90
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+-6. Preserve strict outer experiment-wise separation between training and test data.
+-7. Never use outer-test data for hyperparameter tuning, early stopping, calibration,
+-   regularization selection, model selection, or preprocessing.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ The fundamental challenge is the "Response Time Problem" in chemical sensing.
+@@ -48,6 +38,9 @@
+ # ==============================================================================
+ # IMPORTS
+ # ==============================================================================
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -110,7 +103,7 @@
+ # ==============================================================================
+ # 2. USER CONFIGURATION & PATHS (LOCAL CONFIGURATION)
+ # ==============================================================================
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # Fail-fast check for local mount availability
+@@ -183,9 +176,7 @@
+ 
+ # --- OPTIONAL IMPORT OF PRE-COMPUTED V14 T90 ROWS ---
+ V14_T90_IMPORT_ENABLED = True
+-V14_T90_CSV_DIR = os.path.join(
+-    BASE_PROJECT_DIR, "PostHoc_T90_Response_Analysis_Kalman", "CSVs"
+-)
++V14_T90_CSV_DIR = external_path("aqueous_t90_reports")
+ V14_T90_RAW_ALIGNED_FILE = "Extracted_T90_RawAligned_Metrics.csv"
+ V14_T90_SAVGOL_FILE = "Extracted_T90_Raw_Metrics.csv"
+ V14_IMPORT_BASE_KEY = "o2_static_vit_10"
+@@ -194,11 +185,11 @@
+ OXYGEN_UNIT = "umol/L"
+ 
+ # Output / cache directories.
+-OUTPUT_DIR = os.path.join(BASE_PROJECT_DIR, "Dynamic_IDC_Analysis_Local_Classical")
++OUTPUT_DIR = output_path('aqueous_dynamic_benchmarks')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features_local")
++FEATURE_CACHE_DIR = cache_path('aqueous_dynamic_benchmarks', "features")
+ EXPERIMENT_FEATURE_CACHE_DIR = os.path.join(FEATURE_CACHE_DIR, "per_experiment")
+-CV_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "cv_fold_cache_local_classical")
++CV_CACHE_DIR = cache_path('aqueous_dynamic_benchmarks', "folds")
+ 
+ SUBDIRS = {
+     "preflight": os.path.join(OUTPUT_DIR, "0_Preflight_Diagnostics"),
+@@ -2219,4 +2210,4 @@
+         main()
+     except Exception:
+         traceback.print_exc()
+-        sys.exit(1)+        sys.exit(1)
+--- uploaded/response_paper_classical(1).py
++++ scripts/aqueous_classical_calibration.py
+@@ -1,3 +1,7 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import glob
+ import re
+@@ -15,8 +19,8 @@
+ # ==============================================================================
+ # 1. CONFIGURATION
+ # ==============================================================================
+-ROOT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
+-BASE_OUTPUT = os.path.join(ROOT_DIR, "Classical_Baseline_DualBranch_v3_9")
++ROOT_DIR = data_path('aqueous')
++BASE_OUTPUT = output_path('aqueous_classical_calibration')
+ 
+ ANALYSIS_INTERVALS_S = [(1450, 1650), (2300, 2500), (3100, 3300), (3900, 4100), (4700, 4900)]
+ # STORAGE_DIM = (128, 128) # original results were for 128x128
+@@ -186,4 +190,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    main()+    main()
+--- uploaded/response_paper_heterogeneity_2(2).py
++++ scripts/heterogeneity_quality_groups.py
+@@ -1,16 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 11.0.0 — PIXEL HETEROGENEITY STUDY ("Coded Chemical Aperture" test)
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ HYPOTHESIS UNDER TEST ("Coded Chemical Aperture"):
+@@ -107,6 +100,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -160,7 +156,7 @@
+ # ==============================================================================
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # ------------------------------------------------------------------
+@@ -258,9 +254,7 @@
+ # z-scored as the pool mean (0) so they neither attract nor repel.
+ # T90 does NOT enter the quality score Q (ranking is unchanged).
+ INCLUDE_T90_IN_FEATURES = True
+-T90_PIXEL_CACHE_DIR = os.path.join(BASE_PROJECT_DIR,
+-                                   "Dynamic_IDC_Analysis_V10_heatmpas_t90_claude",
+-                                   "pixel_cache")
++T90_PIXEL_CACHE_DIR = external_path("pixel_t90")
+ 
+ # ------------------------------------------------------------------
+ # Shared parameters — MUST match V10.9.0 exactly
+@@ -285,10 +279,10 @@
+ # ------------------------------------------------------------------
+ # Paths
+ # ------------------------------------------------------------------
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
++FEATURE_CACHE_DIR = cache_path('aqueous_heterogeneity', "features")
+ MASTER_PARQUET    = os.path.join(FEATURE_CACHE_DIR, "idc_master_v10.parquet")
+ 
+-STUDY_DIR      = os.path.join(BASE_PROJECT_DIR, "Heterogeneity_Study")
++STUDY_DIR = output_path("heterogeneity_quality_groups")
+ GROUPDEF_DIR   = os.path.join(STUDY_DIR, "Group_Definitions")
+ CKPT_DIR       = os.path.join(STUDY_DIR, "checkpoints")
+ MODELS_DIR     = os.path.join(STUDY_DIR, "models")
+@@ -1009,7 +1003,7 @@
+                 p.requires_grad = True
+             # self.head is trainable by default.
+ 
+-    def forward(self, x): return self.head(self.vit.forward_features(x)[:, 0]).squeeze()
++    def forward(self, x): return self.head(self.vit.forward_features(x)[:, 0]).squeeze(-1)
+ 
+ 
+ # ==============================================================================
+@@ -1571,4 +1565,4 @@
+         main()
+     except Exception:
+         traceback.print_exc()
+-        sys.exit(1)+        sys.exit(1)
+--- uploaded/response_paper_heterogeneity_groupsize(2).py
++++ scripts/heterogeneity_group_size.py
+@@ -1,16 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 11.4.3-Local — GROUP-SIZE STUDY (WIDEST-MPD GROUPS, LOOCV OVER CHOSEN DAYS)
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ V11.0.0 showed that, at a FIXED group size (16 pixels = 4x4), groups with a
+@@ -152,6 +145,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -207,7 +203,7 @@
+ # ==============================================================================
+ # 2. CONFIGURATION & PATHS (LOCAL WINDOWS CONFIGURATION)
+ # ==============================================================================
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ # ------------------------------------------------------------------
+@@ -289,9 +285,7 @@
+ INCLUDE_T90_IN_FEATURES = True
+ # Local location of the caches; if a day's cache is not found here the whole
+ # project folder is searched recursively (see compute_pixel_features).
+-T90_PIXEL_CACHE_DIR = os.path.join(BASE_PROJECT_DIR,
+-                                   "Dynamic_IDC_Analysis_V10_heatmpas_t90_claude",
+-                                   "pixel_cache")
++T90_PIXEL_CACHE_DIR = external_path("pixel_t90")
+ 
+ # ------------------------------------------------------------------
+ # Shared parameters — MUST match V10.9.0 exactly
+@@ -316,7 +310,7 @@
+ # ------------------------------------------------------------------
+ # Paths (NEW study folder; earlier studies are never touched)
+ # ------------------------------------------------------------------
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
++FEATURE_CACHE_DIR = cache_path('aqueous_heterogeneity', "features")
+ MASTER_PARQUET    = os.path.join(FEATURE_CACHE_DIR, "idc_master_v10.parquet")
+ 
+ # One folder per day selection, so different selections never mix.
+@@ -330,7 +324,7 @@
+     return "days_" + "-".join(sorted(set(parts), key=lambda x: (not x.isdigit(), int(x) if x.isdigit() else 0, x)))
+ 
+ 
+-STUDY_DIR      = os.path.join(BASE_PROJECT_DIR, "Heterogeneity_Study_GroupSize_" + _days_tag(DAYS_TO_RUN))
++STUDY_DIR = output_path("heterogeneity_group_size", _days_tag(DAYS_TO_RUN))
+ GROUPDEF_DIR   = os.path.join(STUDY_DIR, "Group_Definitions")
+ CKPT_DIR       = os.path.join(STUDY_DIR, "checkpoints")
+ MODELS_DIR     = os.path.join(STUDY_DIR, "models")
+@@ -943,7 +937,7 @@
+             for p in self.vit.patch_embed.proj.parameters():
+                 p.requires_grad = True
+ 
+-    def forward(self, x): return self.head(self.vit.forward_features(x)[:, 0]).squeeze()
++    def forward(self, x): return self.head(self.vit.forward_features(x)[:, 0]).squeeze(-1)
+ 
+ 
+ # ==============================================================================
+@@ -1502,4 +1496,4 @@
+         main()
+     except Exception:
+         traceback.print_exc()
+-        sys.exit(1)+        sys.exit(1)
+--- uploaded/response_paper_heterogeneity_infogroups(2).py
++++ scripts/heterogeneity_information_groups.py
+@@ -1,3 +1,4 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ #!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+ """
+@@ -41,6 +42,9 @@
+ Run standalone. No training here -- this only DEFINES the groups.
+ ==============================================================================
+ """
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os, glob, warnings
+ import numpy as np
+ import pandas as pd
+@@ -51,7 +55,7 @@
+ warnings.filterwarnings("ignore")
+ 
+ # ============================ CONFIG =========================================
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ 
+ N_PIXELS_PER_GROUP = 16
+ N_GROUPS           = 9
+@@ -67,14 +71,12 @@
+ MIN_VALID_FRACTION = 0.05        # record-selection leniency (unused-safe)
+ 
+ # output: a SEPARATE definitions folder so it never clobbers the MPD study
+-OUT_DIR = os.path.join(BASE_PROJECT_DIR, "Heterogeneity_Study_ByInfo",
+-                       "Group_Definitions")
++OUT_DIR = output_path("heterogeneity_information_groups", "Group_Definitions")
+ os.makedirs(OUT_DIR, exist_ok=True)
+-FEATURES_PATH = os.path.join(BASE_PROJECT_DIR, "PINN_features", "idc_master_v10.parquet")
++FEATURES_PATH = cache_path("aqueous_heterogeneity", "features", "idc_master_v10.parquet")
+ 
+ # where the SV features live (for the R2 pool) -- reuse the study's cache if present
+-STUDY_FEATURES = os.path.join(BASE_PROJECT_DIR, "Heterogeneity_Study",
+-                              "Group_Definitions", "pixel_features.npz")
++STUDY_FEATURES = output_path("heterogeneity_quality_groups", "Group_Definitions", "pixel_features.npz")
+ 
+ GROUP_VISUAL_TIME_S = 1500.0
+ 
+@@ -260,4 +262,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    build()+    build()
+--- uploaded/response_paper_heterogeneity_linear_4(2).py
++++ scripts/heterogeneity_linear_baselines.py
+@@ -1,16 +1,9 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+ VERSION: 11.2.1 — COMPARATORS ONLY (Linear Ablations & Classical Baselines)
+ ==============================================================================
+-
+---- MANDATORY INSTRUCTION FOR FUTURE PROMPTS/LLMS ---
+-When modifying this code, you MUST:
+-1. Provide extensive, world-class scientific and technical comments.
+-2. Maintain the 'Context and History' summary in the header.
+-3. Explain the 'Added Value' of your specific iteration under the history section.
+-4. Ensure all plots generate corresponding CSV exports for full reproducibility.
+-5. Do not use placeholders; provide fully functional, analytical code.
+ 
+ --- SCIENTIFIC CONTEXT & GOAL ---
+ This script evaluates the LINEAR and CLASSICAL baselines to act as rigorous
+@@ -52,6 +45,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -94,7 +90,7 @@
+ # ==============================================================================
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+-BASE_PROJECT_DIR = r"F:\UNI papers - ALL data\algae\tests\algae_new\exp_1_algae\video\5-algae_tests"
++BASE_PROJECT_DIR = data_path('aqueous')
+ EXPERIMENTS_ROOT_DIR = BASE_PROJECT_DIR
+ 
+ N_PIXELS_PER_GROUP = 16
+@@ -111,9 +107,7 @@
+ 
+ GROUP_MODE = 'expanding'
+ INCLUDE_T90_IN_FEATURES = True
+-T90_PIXEL_CACHE_DIR = os.path.join(BASE_PROJECT_DIR,
+-                                   "Dynamic_IDC_Analysis_V10_heatmpas_t90_claude",
+-                                   "pixel_cache")
++T90_PIXEL_CACHE_DIR = external_path("pixel_t90")
+ 
+ # Shared parameters — MUST match previous TViT runs exactly
+ ANALYSIS_INTERVALS_S = [(1450, 1650), (2300, 2500), (3100, 3300),
+@@ -134,10 +128,10 @@
+ BACKUP_SUMMARY = True                    # timestamped copy of Global_Group_Performance.csv
+ LINEAR_EXPORT_PHASE = "Inference_Linear" # per-day export name (TViT exports untouched)
+ 
+-FEATURE_CACHE_DIR = os.path.join(BASE_PROJECT_DIR, "PINN_features")
++FEATURE_CACHE_DIR = cache_path('aqueous_heterogeneity', "features")
+ MASTER_PARQUET = os.path.join(FEATURE_CACHE_DIR, "idc_master_v10.parquet")
+ 
+-STUDY_DIR = os.path.join(BASE_PROJECT_DIR, "Heterogeneity_Study")
++STUDY_DIR = output_path("heterogeneity_quality_groups")
+ GROUPDEF_DIR = os.path.join(STUDY_DIR, "Group_Definitions")
+ SUMMARY_DIR = os.path.join(STUDY_DIR, "Summary")
+ PIXEL_FEATURES_PATH = os.path.join(GROUPDEF_DIR, "pixel_features.npz")
+@@ -906,4 +900,4 @@
+     try:
+         main()
+     except Exception:
+-        traceback.print_exc(); sys.exit(1)+        traceback.print_exc(); sys.exit(1)
+--- uploaded/response_paper_air_autograd_n-3(1).py
++++ scripts/gas_tvit_autograd_pinn.py
+@@ -1,3 +1,4 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ =========================================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+@@ -28,6 +29,9 @@
+ """
+ 
+ # --- STRICT LIBRARY IMPORTS ---
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import sys
+ import glob
+@@ -87,12 +91,12 @@
+ # ==============================================================================
+ # 2. CONFIGURATION & PATHS (MYRIAD CLUSTER SPECIFIC)
+ # ==============================================================================
+-EXPERIMENTS_ROOT_DIR = "/myriadfs/home/uceens1/response_exp/"
+-OUTPUT_DIR = os.path.join(EXPERIMENTS_ROOT_DIR, "Dynamic_IDC_Analysis_V12_3_Autograd_Cluster")
++EXPERIMENTS_ROOT_DIR = data_path('gas')
++OUTPUT_DIR = output_path('gas_tvit_autograd_pinn')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+ CACHE_DIR = os.path.join(OUTPUT_DIR, "4_Caches")
+ SAVED_MODELS_DIR = os.path.join(OUTPUT_DIR, "5_Saved_Models")
+-ROI_CONFIG_PATH = os.path.join(EXPERIMENTS_ROOT_DIR, "global_roi_settings.json")
++ROI_CONFIG_PATH = external_path("gas_roi")
+ 
+ # --- EXECUTION FLAGS & HYPERPARAMETERS ---
+ FRAME_STEP_RATE = 1  # 1 = keep all frames (10fps)
+@@ -362,8 +366,8 @@
+         feat = self.vit.forward_features(x)[:, 0]
+         combined = torch.cat([feat, t], dim=1)  # Inject continuous time
+ 
+-        S_pred = self.head_S(combined).squeeze()
+-        P_O2 = self.head_O2(combined).squeeze()
++        S_pred = self.head_S(combined).squeeze(-1)
++        P_O2 = self.head_O2(combined).squeeze(-1)
+         return S_pred, P_O2
+ 
+     def get_physics_params(self):
+@@ -566,7 +570,7 @@
+                     grad_outputs=torch.ones_like(S_pred),
+                     create_graph=True, retain_graph=True
+                 )[0]
+-                dS_dt = dS_dt_raw.squeeze()
++                dS_dt = dS_dt_raw.squeeze(-1)
+ 
+                 alpha, k = model.get_physics_params()
+ 
+@@ -622,7 +626,7 @@
+                 outputs=S_pred, inputs=t,
+                 grad_outputs=torch.ones_like(S_pred),
+                 create_graph=False
+-            )[0].squeeze()
++            )[0].squeeze(-1)
+ 
+             alpha, k = model.get_physics_params()
+             phys_targ = alpha * S_pred + (alpha / k) * dS_dt
+@@ -669,4 +673,4 @@
+         print("\n[!!!] FATAL CRASH [!!!]")
+         traceback.print_exc()
+         sys.stdout.flush()
+-        sys.exit(1)+        sys.exit(1)
+--- uploaded/response_paper_air_equil_classical(1).py
++++ scripts/gas_equilibrium_stern_volmer.py
+@@ -1,3 +1,4 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ #!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+ """
+@@ -74,6 +75,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import re
+ import glob
+@@ -108,11 +112,11 @@
+ np.random.seed(SEED)
+ 
+ # --- Paths ---------------------------------------------------------------------
+-BASE_PATH = r"F:\UNI papers - ALL data\response\response_exp"
++BASE_PATH = data_path('gas')
+ OUTPUT_FOLDER_NAME = "PostHoc_ClassicalSV_EquilibriumCal_V15_0"
+ V11_FOLDER_NAME = "Dynamic_IDC_Analysis_V11_1"            # per-frame intensity + reference O2
+ V11_STEP_RATE = 1                                         # reads idc_master_v11_3_step{N}.parquet
+-V11_CACHE_FILE = None    # optional: full path to a specific frame-cache .parquet to use (overrides the search)
++V11_CACHE_FILE = external_path("gas_frame_cache")  # None means automatic discovery    # optional: full path to a specific frame-cache .parquet to use (overrides the search)
+ V14_FOLDER_NAME = "PostHoc_Analysis_MultiModel_V14_1_R"   # optional AI predictions for comparison
+ 
+ # --- Acquisition (must match V11 so intensities are identical) -------------------
+@@ -431,11 +435,11 @@
+ # 2. GENERAL HELPERS
+ # ==============================================================================
+ def resolve_paths():
+-    out = os.path.join(BASE_PATH, OUTPUT_FOLDER_NAME)
++    out = output_path('gas_equilibrium_stern_volmer')
+     P.clear()
+     P.update({
+-        'v11_cache': os.path.join(BASE_PATH, V11_FOLDER_NAME, "4_Caches"),
+-        'v14_cache': os.path.join(BASE_PATH, V14_FOLDER_NAME, "_cache"),
++        'v11_cache': output_path("gas_tvit", "4_Caches"),
++        'v14_cache': external_path("gas_posthoc_cache"),
+         'out': out,
+         'eq': os.path.join(out, "0_Equilibrium_Selection"),
+         'cal': os.path.join(out, "1_Calibration"),
+@@ -1886,4 +1890,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    main()+    main()
+--- uploaded/response_paper_air_poly(1).py
++++ scripts/gas_equilibrium_polynomial.py
+@@ -1,3 +1,4 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ #!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+ """
+@@ -72,6 +73,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import re
+ import glob
+@@ -102,12 +106,12 @@
+ np.random.seed(SEED)
+ 
+ # --- Paths ---------------------------------------------------------------------
+-BASE_PATH = r"F:\UNI papers - ALL data\response\response_exp"
++BASE_PATH = data_path('gas')
+ OUTPUT_FOLDER_NAME = "PostHoc_ClassicalPoly_EquilibriumCal_V15_0"
+ SV_EQ_FOLDER_NAME = "PostHoc_ClassicalSV_EquilibriumCal_V15_0"   # its frame cache is re-used if present
+ V11_FOLDER_NAME = "Dynamic_IDC_Analysis_V11_1"            # per-frame intensity + reference O2
+ V11_STEP_RATE = 1                                         # reads idc_master_v11_3_step{N}.parquet
+-V11_CACHE_FILE = None    # optional: full path to a specific frame-cache .parquet to use (overrides the search)
++V11_CACHE_FILE = external_path("gas_frame_cache")  # None means automatic discovery    # optional: full path to a specific frame-cache .parquet to use (overrides the search)
+ V14_FOLDER_NAME = "PostHoc_Analysis_MultiModel_V14_1_R"   # optional AI predictions for comparison
+ 
+ # --- Acquisition (must match V11 so intensities are identical) -------------------
+@@ -424,11 +428,11 @@
+ # 2. GENERAL HELPERS
+ # ==============================================================================
+ def resolve_paths():
+-    out = os.path.join(BASE_PATH, OUTPUT_FOLDER_NAME)
++    out = output_path('gas_equilibrium_polynomial')
+     P.clear()
+     P.update({
+-        'v11_cache': os.path.join(BASE_PATH, V11_FOLDER_NAME, "4_Caches"),
+-        'v14_cache': os.path.join(BASE_PATH, V14_FOLDER_NAME, "_cache"),
++        'v11_cache': output_path("gas_tvit", "4_Caches"),
++        'v14_cache': external_path("gas_posthoc_cache"),
+         'out': out,
+         'eq': os.path.join(out, "0_Equilibrium_Selection"),
+         'cal': os.path.join(out, "1_Calibration"),
+@@ -654,7 +658,7 @@
+     if V11_CACHE_FILE:
+         cands.append(V11_CACHE_FILE)
+     cands.append(_own_frame_cache())                                   # written by a previous run of this script
+-    cands.append(os.path.join(BASE_PATH, SV_EQ_FOLDER_NAME, "5_Data",   # written by the SV equilibrium script
++    cands.append(os.path.join(output_path("gas_equilibrium_stern_volmer"), "5_Data",   # written by the SV equilibrium script
+                               f"_frame_cache_step{V11_STEP_RATE}.parquet"))
+     cands.append(os.path.join(P['v11_cache'], f"idc_master_v11_3_step{V11_STEP_RATE}.parquet"))
+     cands += sorted(glob.glob(os.path.join(P['v11_cache'], "idc_master_*.parquet")),
+@@ -1890,4 +1894,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    main()+    main()
+--- uploaded/response_paper_air_pureViT_from1_3(1).py
++++ scripts/gas_tvit.py
+@@ -1,3 +1,4 @@
++# Repository edition: see docs/CHANGES.md and docs/REPRODUCIBILITY.md.
+ """
+ ==============================================================================
+ PROJECT: PINN-IDC (Inverse Dynamic Compensation) Framework
+@@ -87,6 +88,9 @@
+ ==============================================================================
+ """
+ 
++# Portable repository paths; edit scripts/repo_config.py for your computer.
++from repo_config import data_path, output_path, cache_path, external_path
++
+ import os
+ import re
+ import glob
+@@ -128,8 +132,8 @@
+ # ==============================================================================
+ # 2. CONFIGURATION & PATHS
+ # ==============================================================================
+-EXPERIMENTS_ROOT_DIR = r"F:\UNI papers - ALL data\response\response_exp"
+-OUTPUT_DIR = os.path.join(EXPERIMENTS_ROOT_DIR, "Dynamic_IDC_Analysis_V11_1")
++EXPERIMENTS_ROOT_DIR = data_path('gas')
++OUTPUT_DIR = output_path('gas_tvit')
+ CSV_EXPORT_DIR = os.path.join(OUTPUT_DIR, "csv_exports")
+ CACHE_DIR = os.path.join(OUTPUT_DIR, "4_Caches")
+ 
+@@ -376,7 +380,7 @@
+             self.vit.patch_embed.proj.bias = orig_proj.bias
+         self.head = nn.Sequential(nn.Linear(self.vit.embed_dim, 128), nn.GELU(), nn.Linear(128, 1))
+ 
+-    def forward(self, x): return self.head(self.vit.forward_features(x)[:, 0]).squeeze()
++    def forward(self, x): return self.head(self.vit.forward_features(x)[:, 0]).squeeze(-1)
+ 
+ 
+ # ==============================================================================
+@@ -571,4 +575,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    main()+    main()

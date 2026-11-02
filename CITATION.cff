@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "Please cite the associated manuscript, Computer vision enhanced oxygen sensing. Add its verified publication identifier when available."
+title: "Computer-vision-enhanced-oxygen-sensing"
+type: software
+authors:
+  - family-names: Salaris
+    given-names: Nikolaos
+  - family-names: Zhang
+    given-names: Jianhui
+  - family-names: Heydari
+    given-names: Abbas
+  - family-names: Mazomenos
+    given-names: Evangelos
+  - family-names: Desjardins
+    given-names: Adrien
+  - family-names: Tiwari
+    given-names: Manish K.
+abstract: "Research scripts for camera-based oxygen sensing with heterogeneous luminescent films, temporal vision transformers, classical calibration and dynamic compensation."

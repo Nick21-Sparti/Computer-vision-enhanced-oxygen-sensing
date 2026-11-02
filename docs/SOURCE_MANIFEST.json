@@ -1,0 +1,140 @@
+[
+  {
+    "original_name": "response_paper_1_3(1).py",
+    "repository_path": "scripts/aqueous_tvit.py",
+    "source_sha256": "f6022892f958ca0c6753bad2211282e98c488e0316c5bf97e71ae6230baa4d90",
+    "repository_sha256": "8a4fc1bded352d4eb25d8ed1fbd6c9ca880589f744eb909a408d0f4e92e4b72b",
+    "runtime_fixes": [
+      "Preserved batch dimension in 1 scalar-output squeeze calls."
+    ]
+  },
+  {
+    "original_name": "response_paper_2_PINN_diff_eq(1).py",
+    "repository_path": "scripts/aqueous_tvit_mass_transfer.py",
+    "source_sha256": "7ff1b78954fc2619ded1d5d27eb78511cd9734d4a5dd6fa8d156ceba7070e385",
+    "repository_sha256": "ebf11b4a9aace94261360c1717b7e6de0d34065b312a1d669674d31889d48044",
+    "runtime_fixes": [
+      "Preserved batch dimension in 1 scalar-output squeeze calls.",
+      "Fixed full-timeline MAE: slice(None) has no .any() method.",
+      "Re-raised top-level errors after printing the traceback."
+    ]
+  },
+  {
+    "original_name": "response_paper_3_aitools_1(1).py",
+    "repository_path": "scripts/aqueous_tvit_multitask.py",
+    "source_sha256": "312873d02e3addf16e2b5e574b53565067e43e0693118f9f774371890cce98fe",
+    "repository_sha256": "b7d07677cf4d84172fadaceeca0202a773ba56f79dd875fc326eda0439b0b8bf",
+    "runtime_fixes": [
+      "Re-raised top-level errors after printing the traceback."
+    ]
+  },
+  {
+    "original_name": "response_paper_4_bayesian(1).py",
+    "repository_path": "scripts/aqueous_tvit_bayesian.py",
+    "source_sha256": "f155fc93045b5146480cce20f4b0681970810d15b78df8016ac28c1adfdf8788",
+    "repository_sha256": "cf21d75ca2e531773f5b5d15790603494871c83959f5bae9407cf6d6b72e7131",
+    "runtime_fixes": [
+      "Re-raised top-level errors after printing the traceback."
+    ]
+  },
+  {
+    "original_name": "response_paper_5_future_t(1).py",
+    "repository_path": "scripts/aqueous_tvit_kinetic.py",
+    "source_sha256": "3507f74028de5fc96d9cef8ae8a15fdcda8780623752fd1d53414c23c433f21f",
+    "repository_sha256": "2ce9835d95933fe16f930cb9a239b265b59e2f4e6400386468f5e470ac9bfedf",
+    "runtime_fixes": [
+      "Converted fresh Polars-derived pixel lists to NumPy before reshape.",
+      "Preserved batch dimension in 3 scalar-output squeeze calls.",
+      "Re-raised top-level errors after printing the traceback."
+    ]
+  },
+  {
+    "original_name": "response_paper_6_curriculum_learning(1).py",
+    "repository_path": "scripts/aqueous_tvit_curriculum.py",
+    "source_sha256": "fcbf4dbfc5b331cdb5a13351d1996b7a280bb8ec68305a15e8da9c7c637c50bb",
+    "repository_sha256": "37db8cd3ded5d1e34babe682e80f4baed4f7850dbbd239ebb2d206d4635a09b3",
+    "runtime_fixes": [
+      "Converted fresh Polars-derived pixel lists to NumPy before reshape.",
+      "Preserved batch dimension in 3 scalar-output squeeze calls.",
+      "Re-raised top-level errors after printing the traceback."
+    ]
+  },
+  {
+    "original_name": "response_paper_alternatives_linear_methods_local(1).py",
+    "repository_path": "scripts/aqueous_dynamic_benchmarks.py",
+    "source_sha256": "72d535a3e778e85928a79a07cdade0471c71e96f60fe7ece8ea366b2536557d6",
+    "repository_sha256": "6a716ffda68ba1434790a6aacb020056f104f8c50e95085e554d0db3d6a9d981",
+    "runtime_fixes": []
+  },
+  {
+    "original_name": "response_paper_classical(1).py",
+    "repository_path": "scripts/aqueous_classical_calibration.py",
+    "source_sha256": "f0c0631967ec16988a08a1ade9f336303289734c2e5e3b7ed5751c02152bebf0",
+    "repository_sha256": "b158194c78eecaad01e2d96dac437d16ef389f86e6bda5b6a9477daaed8b886b",
+    "runtime_fixes": []
+  },
+  {
+    "original_name": "response_paper_heterogeneity_2(2).py",
+    "repository_path": "scripts/heterogeneity_quality_groups.py",
+    "source_sha256": "f3e2b49c111bee42ec80416b426b88063d6f1e8b7d8d1926119c708f37109dc4",
+    "repository_sha256": "dfbd5174ff17da6a3ab64c7e4694925238ff26713110f8cd5049696fd1a908be",
+    "runtime_fixes": [
+      "Preserved batch dimension in 1 scalar-output squeeze calls."
+    ]
+  },
+  {
+    "original_name": "response_paper_heterogeneity_groupsize(2).py",
+    "repository_path": "scripts/heterogeneity_group_size.py",
+    "source_sha256": "06331be598f82b01f76b32a94928f18588cd590277e799421b18edb410fb46e0",
+    "repository_sha256": "914ceb3e48f296b4ca352e9efafb48ddb2f5c570555d9a2fbb02c66fec47327c",
+    "runtime_fixes": [
+      "Preserved batch dimension in 1 scalar-output squeeze calls."
+    ]
+  },
+  {
+    "original_name": "response_paper_heterogeneity_infogroups(2).py",
+    "repository_path": "scripts/heterogeneity_information_groups.py",
+    "source_sha256": "7a3c4f5a8e37714b0b809218a3f0aacd79e14a59607f7bbaedb236690831bcfa",
+    "repository_sha256": "a7201255001f7f1585920fc4386111601f885777e7c3bfe01954dae9a9121d97",
+    "runtime_fixes": []
+  },
+  {
+    "original_name": "response_paper_heterogeneity_linear_4(2).py",
+    "repository_path": "scripts/heterogeneity_linear_baselines.py",
+    "source_sha256": "7dd0091d15faf5acecf71f3fb2ec7014a8c0813e1534364e173f546e34eb7fe7",
+    "repository_sha256": "a702ed45d4a1eac0244c65b2960c9eb560dc80e18f97f6767ec3521403694b43",
+    "runtime_fixes": []
+  },
+  {
+    "original_name": "response_paper_air_autograd_n-3(1).py",
+    "repository_path": "scripts/gas_tvit_autograd_pinn.py",
+    "source_sha256": "cb656e14b37f1a1b8c804e44658f9373cb85d1fabd8007fdccd2e4de00a4bfe4",
+    "repository_sha256": "d53f7fd63e3d7c117dd1fd57dcf4cafd277aebe409718dbb6da7fbda0464773c",
+    "runtime_fixes": [
+      "Preserved batch dimension in 4 scalar-output squeeze calls."
+    ]
+  },
+  {
+    "original_name": "response_paper_air_equil_classical(1).py",
+    "repository_path": "scripts/gas_equilibrium_stern_volmer.py",
+    "source_sha256": "6137000d21e98c94796192203a0abddbdb66f3dcce847230f8933e3b5c35de2c",
+    "repository_sha256": "a33762d7140197e9dd6a5fed2526b88d1ed77f0f1de815fb1e8d53107a755168",
+    "runtime_fixes": []
+  },
+  {
+    "original_name": "response_paper_air_poly(1).py",
+    "repository_path": "scripts/gas_equilibrium_polynomial.py",
+    "source_sha256": "97c961ecc44a3cbf7de7b4a370af9ee69d17ab22d82ace678504d3b2da5e448d",
+    "repository_sha256": "54368ed1e5bce4cbd9b4f454fef6bf4ec697c9ec6053154ea518389da193c348",
+    "runtime_fixes": []
+  },
+  {
+    "original_name": "response_paper_air_pureViT_from1_3(1).py",
+    "repository_path": "scripts/gas_tvit.py",
+    "source_sha256": "fa6a3835bd5c6d395472cf9472025dcbe8f9c0b385f76daf9a2c09ca60d11a8c",
+    "repository_sha256": "610b6eb642289e5504438b1a26d7cd762762c17b0e6d45d94ebfbdc1e8442b86",
+    "runtime_fixes": [
+      "Preserved batch dimension in 1 scalar-output squeeze calls."
+    ]
+  }
+]

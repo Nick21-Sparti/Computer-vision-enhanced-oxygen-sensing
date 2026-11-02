@@ -1,0 +1,3 @@
+# Optional Optuna chart rendering. Training does not require these exports.
+plotly
+kaleido
